@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 from enum import Enum
 from locale import atoi
@@ -155,8 +156,10 @@ def get_center_of_monitor(monitor: Dict[str, Any], mov: Direction) -> Dict[str, 
 
 def change_monitor_focus(mov: Direction) -> int:
     pos = get_current_windows_position()
+    print (pos)
     monitors = get_all_monitors()
     current_monitor_pos = get_current_monitor_pos(monitors, pos)
+    print (current_monitor_pos)
     if mov in [Direction.LEFT_INTER, Direction.RIGHT_INTER]:
         new_monitor_pos = current_monitor_pos
     else:
@@ -166,12 +169,24 @@ def change_monitor_focus(mov: Direction) -> int:
         mov = Direction.RIGHT_INTER if pos['side'] == Direction.LEFT else Direction.LEFT_INTER
 
     center_of_screen = get_center_of_monitor(monitors[new_monitor_pos], mov)
-    query_get_window_at = "xdotool mousemove {} {} getmouselocation --shell mousemove restore & echo $WINDOW ".format(
+    print (center_of_screen)
+    query_get_window_at = "xdotool mousemove {} {} getmouselocation --shell  & echo $WINDOW ".format(
         center_of_screen["x"],
         center_of_screen["y"]
     )
     window_id = subprocess.getoutput(query_get_window_at).split("WINDOW=")[1]
     subprocess.getoutput("xdotool windowactivate {}".format(window_id))
+
+
+    if pos['x'] < center_of_screen['x']:
+        # if the mouse currently is on the left screen, move it to the right (from the middle of the left screen)
+        command = ["xdotool", "mousemove", "--sync", str(pos['x']+center_of_screen['x']), str(center_of_screen['y']/2)]
+    else:
+        # if the mouse currently is on the left screen, move it to the right (from the middle of the left screen)
+        command = ["xdotool", "mousemove", "--sync", str(pos['x']-center_of_screen['x']), str(center_of_screen['y']/2)]
+    #subprocess.Popen(command)
+    
+
     return new_monitor_pos
 
 
